@@ -1,3 +1,4 @@
+// DOM elements
 const courseListSection = document.getElementById("course-list");
 const courseDetailSection = document.getElementById("course-detail");
 const coursesContainer = document.getElementById("courses");
@@ -7,20 +8,21 @@ const backBtn = document.getElementById("back-btn");
 const completeBtn = document.getElementById("complete-btn");
 const progressText = document.getElementById("progress-text");
 
-let coursesData = []; // will come from backend
-let completedCourses = [];
+let coursesData = [];
 
-// ✅ Fetch data from backend
+// ✅ Load data from local file (works on Netlify)git add script.js
 async function loadCourses() {
   try {
-    const res = await fetch("http://localhost:5000/courses");
+    const res = await fetch("courses.json"); // Fetch the local file
     coursesData = await res.json();
     renderCourses();
   } catch (err) {
     console.error("❌ Error fetching courses:", err);
+    coursesContainer.innerHTML = "<p>⚠️ Failed to load courses. Please refresh.</p>";
   }
 }
 
+// ✅ Display all courses
 function renderCourses() {
   coursesContainer.innerHTML = "";
   coursesData.forEach(course => {
@@ -35,6 +37,7 @@ function renderCourses() {
   });
 }
 
+// ✅ Open course detail
 function openCourse(id) {
   const course = coursesData.find(c => c.id === id);
   if (!course) return;
@@ -43,17 +46,18 @@ function openCourse(id) {
   courseDetailSection.classList.remove("hidden");
   courseTitle.textContent = course.title;
 
-  // Mock lessons (backend doesn't have them yet)
+  // Mock lessons (you can later replace with real data)
   lessonList.innerHTML = `
-    <li>Lesson 1</li>
-    <li>Lesson 2</li>
-    <li>Lesson 3</li>
+    <li>Lesson 1: Introduction</li>
+    <li>Lesson 2: Practice Session</li>
+    <li>Lesson 3: Quiz & Summary</li>
   `;
 
   updateProgress(course);
   completeBtn.onclick = () => markCompleted(id);
 }
 
+// ✅ Update progress text and button state
 function updateProgress(course) {
   if (course.completed) {
     progressText.textContent = "🎉 You have completed this course!";
@@ -66,26 +70,17 @@ function updateProgress(course) {
   }
 }
 
-// ✅ Mark as completed using backend
-async function markCompleted(id) {
-  try {
-    const res = await fetch(`http://localhost:5000/courses/${id}/complete`, {
-      method: "POST",
-    });
-    const data = await res.json();
-    console.log(data.message);
-
-    // Update local data
-    const course = coursesData.find(c => c.id === id);
-    if (course) course.completed = true;
-
+// ✅ Mark course as completed (local only)
+function markCompleted(id) {
+  const course = coursesData.find(c => c.id === id);
+  if (course) {
+    course.completed = true;
     updateProgress(course);
     renderCourses();
-  } catch (err) {
-    console.error("❌ Error marking course complete:", err);
   }
 }
 
+// ✅ Handle back navigation
 backBtn.addEventListener("click", () => {
   courseDetailSection.classList.add("hidden");
   courseListSection.classList.remove("hidden");
